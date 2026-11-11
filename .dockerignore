@@ -1,0 +1,38 @@
+# Control de versiones
+.git
+.gitignore
+
+# Entornos y cachés de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# IDE / editor
+.vscode/
+.kiro/
+.idea/
+
+# Secretos y datos locales — se montan como volúmenes, NO van en la imagen
+.env
+data/
+watchdog.log
+
+# Scripts específicos de Windows (no aplican en el contenedor Linux)
+*.ps1
+*.bat
+iniciar_web.ps1
+mantener_vivo.ps1
+instalar_tarea.bat
+jira-tools/
+
+# Artefactos y material que no necesita la app en producción
+excel_ai/*.xlsx
+proyecto_ecxel/**/__pycache__/
+imagenes marcas/
+tablas/
+alegra_postman_collection.json
+*.md

@@ -1,0 +1,85 @@
+# ── Entorno / secretos ─────────────────────────────
+.env
+.env.*
+!.env.example
+
+# Credenciales de Google / OAuth / service accounts
+**/oauth_credentials.json
+**/oauth_token.json
+**/active_tokens.json
+**/*service*.json
+**/client_secret*.json
+data/email-alegra-service-*.json
+data/master_drive_id.json
+
+# ── Python ─────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ── Datos generados ────────────────────────────────
+data/*.json
+data/**/*.json
+data/images/
+*.xlsx
+
+# ── Código archivado (no versionar) ────────────────
+_legacy/
+
+# ── Logs del watchdog ──────────────────────────────
+watchdog.log
+
+# ── Artefactos de Docker (imagen exportada y logs de build/push) ──
+*.tar
+build*.log
+push.log
+container_test.log
+docker/env.sh
+
+# ── Sistema ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# Local data, production exports, and credentials are never part of the portfolio.
+data/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.csv
+*.xlsx
+*.tar
+imagenes marcas/
+
+# Database exports and local-only schemas.
+tablas/*dump*.sql
+tablas/Dump*/
+tablas/schema_local.sql
+
+# Local IDE/agent state and operational notes.
+.agents/
+.kiro/
+.vscode/
+jira-tools/
+ESTADO_PROYECTO.md
+RESUMEN_OPERACION.md
+SESSION_RESUMEN.md
+ENTREGA_COMPANERO.md
+DEPLOY_DOCKER.md
+MVP_REGISTRO_ACCESOS.txt
+response.html
+alegra_postman_collection.json
+tmp*.txt
+
+# One-off production/debug helpers and local launch scripts.
+check_*.py
+debug_productos.py
+fix_corrupt_images.py
+iniciar_web.ps1
+mantener_vivo.ps1
+
+# Local-only compose and scratch file.
+docker-compose.yml
+/-w
+excel_ai/drive_id.json

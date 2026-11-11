@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Precios - Alianxa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; color: #333; }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white;
+            padding: 18px 24px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header h1   { font-size: 1.2rem; margin-bottom: 3px; }
+        .header .sub { font-size: 0.75rem; opacity: 0.65; font-style: italic; }
+        .header .date{ font-size: 0.73rem; opacity: 0.55; margin-top: 3px; }
+        .header .client {
+            font-size: 0.82rem; margin-top: 6px;
+            color: #a8d4ff; font-weight: 600;
+        }
+
+        /* ── Filters ── */
+        .filters {
+            background: white;
+            padding: 12px 18px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 77px;
+            z-index: 99;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .filters label { font-weight: 600; font-size: 0.83rem; color: #1a2a4a; white-space: nowrap; }
+        .filters select, .filters input {
+            padding: 7px 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+        }
+        .filters select:focus, .filters input:focus { border-color: #2d4a7a; }
+        .filters select  { min-width: 150px; }
+        .filters .count  { font-size: 0.78rem; color: #666; margin-left: auto; white-space: nowrap; }
+
+        /* Buscador con botón lupa */
+        .search-wrap {
+            display: flex;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+            flex: 1;
+            min-width: 180px;
+            transition: border-color 0.2s;
+        }
+        .search-wrap:focus-within { border-color: #2d4a7a; }
+        .search-wrap input {
+            flex: 1; border: none; border-radius: 0;
+            padding: 7px 11px; font-size: 0.88rem;
+            outline: none; background: white;
+            min-width: 0;
+        }
+        .btn-lupa {
+            background: #2d4a7a; border: none;
+            padding: 7px 12px; cursor: pointer;
+            color: white; font-size: 0.9rem;
+            transition: background 0.2s; line-height: 1;
+        }
+        .btn-lupa:hover { background: #1a2a4a; }
+
+        .btn-clear {
+            background: none; border: none;
+            padding: 7px 10px; cursor: pointer;
+            color: #999; font-size: 1rem;
+            transition: color 0.2s; line-height: 1;
+            display: none;
+        }
+        .btn-clear:hover { color: #e53935; }
+        .search-wrap input:not(:placeholder-shown) ~ .btn-clear { display: block; }
+
+        /* Toggle vista cuadrícula/lista (móvil) */
+        .view-toggle {
+            display: none;
+            gap: 5px;
+        }
+        .btn-view {
+            background: #f0f0f0; border: 1px solid #ddd;
+            border-radius: 6px; padding: 6px 10px;
+            cursor: pointer; font-size: 1rem; color: #555;
+            transition: background 0.2s, color 0.2s; line-height: 1;
+        }
+        .btn-view.active { background: #2d4a7a; color: white; border-color: #2d4a7a; }
+        .btn-view:hover:not(.active) { background: #e0e0e0; }
+
+        /* Lista móvil */
+        .cards-grid.view-list {
+            grid-template-columns: 1fr !important;
+            gap: 7px;
+        }
+        .cards-grid.view-list .card {
+            display: flex; flex-direction: row;
+            align-items: center; gap: 10px;
+            padding: 8px 10px;
+        }
+        .cards-grid.view-list .card-img-wrap {
+            width: 60px; height: 60px; min-width: 60px;
+            border-bottom: none; border-right: 1px solid #f0f0f0;
+            border-radius: 8px; overflow: hidden;
+            aspect-ratio: unset;
+        }
+        .cards-grid.view-list .card-check-wrap {
+            position: static; order: -1;
+        }
+        .cards-grid.view-list .card-body { flex: 1; padding: 0; }
+        .cards-grid.view-list .card-name { -webkit-line-clamp: 2; line-clamp: 2; }
+
+        /* ── FAB WhatsApp ── */
+        .fab-wa {
+            position: fixed;
+            bottom: 22px; right: 20px;
+            background: #25D366;
+            color: white;
+            border-radius: 50px;
+            padding: 13px 20px 13px 16px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-decoration: none;
+            box-shadow: 0 4px 18px rgba(37,211,102,0.45);
+            z-index: 200;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .fab-wa:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(37,211,102,0.5); }
+        .fab-wa.cotizando {
+            background: #1a2a4a;
+            box-shadow: 0 4px 18px rgba(26,42,74,0.5);
+            animation: pulse 1.5s infinite;
+        }
+        .fab-wa.cotizando:hover { background: #2d4a7a; }
+        .fab-badge {
+            background: #ff4444; color: white;
+            border-radius: 50%; width: 20px; height: 20px;
+            font-size: 0.72rem; font-weight: 800;
+            display: none; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .fab-wa.cotizando .fab-badge { display: flex; }
+        @keyframes pulse {
+            0%,100% { box-shadow: 0 4px 18px rgba(26,42,74,0.5); }
+            50%      { box-shadow: 0 4px 28px rgba(26,42,74,0.8); }
+        }
+
+        /* ══════════════════════════════════════
+           VISTA ESCRITORIO — tabla
+        ══════════════════════════════════════ */
+        .catalog-container { padding: 14px; max-width: 1200px; margin: 0 auto; }
+
+        .category-banner {
+            background: linear-gradient(135deg, #1a2a4a, #1f3864);
+            color: white; font-weight: 700; font-size: 0.95rem;
+            padding: 9px 18px; border-radius: 6px;
+            margin: 18px 0 7px; letter-spacing: 0.4px;
+        }
+        .catalog-table {
+            width: 100%; border-collapse: collapse;
+            background: white; border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 8px;
+        }
+        .catalog-table thead th {
+            background: #2E75B6; color: white;
+            font-size: 0.78rem; padding: 9px 7px;
+            text-align: center; font-weight: 600;
+            position: sticky; top: 125px; z-index: 50;
+        }
+        .catalog-table thead tr th:first-child { border-radius: 8px 0 0 0; }
+        .catalog-table thead tr th:last-child  { border-radius: 0 8px 0 0; }
+        .catalog-table tbody tr {
+            border-bottom: 1px solid #eee; transition: background 0.15s;
+        }
+        .catalog-table tbody tr:hover { background: #f0f5ff; }
+        .catalog-table tbody tr.hidden { display: none; }
+        .catalog-table td { padding: 8px 7px; font-size: 0.84rem; vertical-align: middle; }
+
+        .col-cotizar { text-align: center; width: 52px; }
+        .col-cotizar input[type="checkbox"] {
+            width: 18px; height: 18px; cursor: pointer; accent-color: #2d4a7a;
+        }
+        .product-row.selected { background: #e8f0fe !important; }
+        .col-code  { text-align: center; font-weight: 600; width: 130px; font-size: 0.78rem; }
+        .col-img   { text-align: center; width: 62px; }
+        .col-img img { width: 48px; height: 48px; object-fit: contain; border-radius: 4px; border: 1px solid #eee; }
+        .col-name  { font-weight: 600; font-size: 0.88rem; }
+        .col-price { text-align: center; font-weight: 700; color: #1a2a4a; font-size: 0.95rem; width: 130px; }
+        .col-price.contact { color: #888; font-style: italic; font-weight: 400; font-size: 0.8rem; }
+        .col-stock { text-align: center; width: 150px; font-size: 0.8rem; }
+        .col-stock.available   { color: #2e7d32; font-weight: 600; }
+        .col-stock.unavailable { color: #999; font-style: italic; }
+        .category-row td {
+            background: #1a2a4a !important; color: white !important;
+            font-weight: 700; font-size: 0.87rem; padding: 8px 14px;
+        }
+
+        /* ══════════════════════════════════════
+           VISTA MÓVIL — tarjetas (ocultas en desktop)
+        ══════════════════════════════════════ */
+        .mobile-catalog { display: none; padding: 10px; }
+
+        .mobile-cat-label {
+            background: linear-gradient(135deg, #1a2a4a, #1f3864);
+            color: white; font-weight: 700; font-size: 0.82rem;
+            padding: 8px 14px; border-radius: 6px;
+            margin: 14px 0 8px; letter-spacing: 0.3px;
+            cursor: pointer; user-select: none;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.2s;
+        }
+        .mobile-cat-label:hover { background: linear-gradient(135deg, #243b5e, #2d4a7a); }
+        .mobile-cat-label .cat-arrow {
+            font-size: 0.7rem; transition: transform 0.25s ease;
+            flex-shrink: 0; margin-left: 8px;
+        }
+        .mobile-cat-label.collapsed .cat-arrow { transform: rotate(-90deg); }
+        .cards-grid.collapsed { display: none; }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .card {
+            background: white; border-radius: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+            overflow: hidden; position: relative;
+            transition: box-shadow 0.2s;
+        }
+        .card.selected {
+            box-shadow: 0 0 0 2px #2d4a7a, 0 2px 10px rgba(45,74,122,0.2);
+        }
+        /* Checkbox en esquina superior derecha */
+        .card-check-wrap {
+            position: absolute; top: 7px; right: 7px; z-index: 5;
+        }
+        .card-check-wrap input[type="checkbox"] {
+            width: 20px; height: 20px;
+            cursor: pointer; accent-color: #2d4a7a;
+        }
+        /* Imagen */
+        .card-img-wrap {
+            width: 100%; aspect-ratio: 1 / 1;
+            background: #f8f9fa;
+            display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid #f0f0f0;
+            overflow: hidden;
+        }
+        .card-img-wrap img {
+            width: 100%; height: 100%; object-fit: contain; padding: 8px;
+        }
+        .card-img-placeholder {
+            font-size: 2.2rem; color: #c0c8d8;
+        }
+        /* Cuerpo */
+        .card-body { padding: 9px 9px 11px; }
+        .card-ref {
+            font-size: 0.65rem; color: #999; font-weight: 600;
+            text-transform: uppercase; margin-bottom: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .card-name {
+            font-size: 0.76rem; font-weight: 700; color: #1a2a4a;
+            line-height: 1.3; margin-bottom: 7px;
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .card-price { font-size: 0.92rem; font-weight: 800; color: #2d4a7a; }
+        .card-price.contact { font-size: 0.75rem; color: #888; font-weight: 500; font-style: italic; }
+        .card-stock { font-size: 0.68rem; margin-top: 3px; }
+        .card-stock.ok { color: #2e7d32; font-weight: 600; }
+        .card-stock.no { color: #aaa; }
+
+        /* ocultar en móvil */
+        .mobile-hidden-card { display: none !important; }
+
+        .no-results {
+            text-align: center; padding: 40px;
+            color: #888; font-size: 0.95rem; display: none;
+        }
+        /* ── Botón Ver más ── */
+        #btn-ver-mas {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white; border: none; border-radius: 25px;
+            padding: 12px 32px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; letter-spacing: 0.5px;
+            box-shadow: 0 3px 12px rgba(45,74,122,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #btn-ver-mas:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(45,74,122,0.4); }
+        #ver-mas-info { font-size: 0.8rem; opacity: 0.75; }
+
+        /* ── Splash de carga ── */
+        #splash {
+            position: fixed; inset: 0;
+            background: linear-gradient(160deg, #1a2a4a 0%, #2d4a7a 60%, #1a2a4a 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #splash.oculto { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-logo {
+            font-size: 2.2rem; font-weight: 900; color: white;
+            letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .splash-logo span { color: #a8d4ff; }
+        .splash-sub {
+            font-size: 0.78rem; color: rgba(255,255,255,0.5);
+            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px;
+        }
+        .splash-msg {
+            font-size: 0.88rem; color: rgba(255,255,255,0.75);
+            margin-bottom: 18px; min-height: 1.2em;
+            text-align: center; transition: opacity 0.3s;
+        }
+        .progress-track {
+            width: 220px; height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 4px; overflow: hidden; margin-bottom: 30px;
+        }
+        .progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #a8d4ff, #fff);
+            border-radius: 4px; transition: width 0.4s ease;
+        }
+        .splash-dots { display: flex; gap: 8px; }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            animation: dot-pulse 1.4s ease-in-out infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dot-pulse {
+            0%,100% { background: rgba(255,255,255,0.25); transform: scale(1); }
+            50%      { background: rgba(168,212,255,0.9); transform: scale(1.3); }
+        }
+
+        .footer {
+            text-align: center; padding: 20px 10px 80px;
+            font-size: 0.73rem; color: #aaa;
+
+        }
+
+        /* ══════════════════════════════════════
+           MEDIA QUERY — móvil
+        ══════════════════════════════════════ */
+        @media (max-width: 768px) {
+            /* Header compacto */
+            .header { padding: 12px 16px; top: 0; }
+            .header h1 { font-size: 1rem; }
+
+            /* Filtros apilados */
+            .filters {
+                flex-direction: column; gap: 8px;
+                padding: 10px 12px; top: 62px;
+            }
+            .filters label { display: none; }
+            .filters select, .filters input { width: 100%; font-size: 0.9rem; }
+            .filters .count { margin-left: 0; }
+            .search-wrap { width: 100%; }
+            .view-toggle { display: flex; }
+
+            /* Mostrar tarjetas, ocultar tabla */
+            .catalog-container { display: none; }
+            .mobile-catalog    { display: block; }
+
+            /* FAB solo ícono cuando no cotiza */
+            .fab-texto-label { display: none; }
+            .fab-wa {
+                padding: 14px; border-radius: 50%;
+                bottom: 18px; right: 16px;
+            }
+            .fab-wa.cotizando {
+                border-radius: 50px;
+                padding: 13px 18px 13px 14px;
+            }
+            .fab-wa.cotizando .fab-texto-label { display: inline; }
+        }
+
+        /* Tipografía ligeramente mayor para facilitar la lectura. */
+        .filters label { font-size: 0.9rem; }
+        .filters select,
+        .filters input,
+        .search-wrap input { font-size: 0.95rem; }
+        .filters .count { font-size: 0.85rem; }
+        .catalog-table thead th { font-size: 0.84rem; }
+        .catalog-table td { font-size: 0.9rem; }
+        .col-code { font-size: 0.84rem; }
+        .col-name { font-size: 0.94rem; }
+        .col-price { font-size: 1.02rem; }
+        .col-price.contact,
+        .col-stock { font-size: 0.86rem; }
+        .category-row td,
+        .category-banner { font-size: 0.94rem; }
+        .card-ref { font-size: 0.7rem; }
+        .card-name { font-size: 0.84rem; }
+        .card-price { font-size: 1rem; }
+        .card-price.contact { font-size: 0.82rem; }
+        .card-stock { font-size: 0.75rem; }
+
+        @media (max-width: 768px) {
+            .catalog-table td { font-size: 0.86rem; }
+            .col-price { font-size: 0.94rem; }
+            .col-stock { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📋 LISTA DE PRECIOS — IVA INCLUIDO</h1>
+        <div class="sub">Sujeta a cambios. No constituye propuesta comercial firme.</div>
+        <div class="date">Actualizado: {{ fecha }}</div>
+        {% if nombre_cliente %}
+        <div class="client">Hola, {{ nombre_cliente }} </div>
+        {% endif %}
+    </div>
+
+    <div class="filters">
+        <label for="cat-filter">Categoría:</label>
+        <select id="cat-filter" onchange="applyFilters()">
+            <option value="">TODAS ({{ categorias|length }})</option>
+            {% for cat in categorias %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="sort-filter">Ordenar:</label>
+        <select id="sort-filter" onchange="applyFilters()">
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="price-desc">Precio: Mayor → Menor</option>
+            <option value="price-asc">Precio: Menor → Mayor</option>
+        </select>
+
+        <label for="search-input">Buscar:</label>
+        <div class="search-wrap">
+            <input type="text" id="search-input"
+                   placeholder="Buscar producto o código..."
+                   oninput="applyFilters()"
+                   onkeydown="if(event.key==='Escape') clearSearch()">
+            <button class="btn-clear" id="btn-clear" onclick="clearSearch()" title="Borrar búsqueda">✕</button>
+            <button class="btn-lupa" onclick="applyFilters()" title="Buscar">🔍</button>
+        </div>
+
+        <div class="view-toggle">
+            <button class="btn-view active" id="btnGrid" onclick="setCardView('grid')" title="Cuadrícula">⊞</button>
+            <button class="btn-view" id="btnList" onclick="setCardView('list')" title="Lista">☰</button>
+        </div>
+
+        <span class="count" id="result-count"></span>
+    </div>
+
+    <!-- ── VISTA ESCRITORIO: tabla ── -->
+    <div class="catalog-container">
+        <table class="catalog-table">
+            <thead>
+                <tr>
+                    <th title="Agregar a cotización">COTIZAR</th>
+                    <th>CÓDIGO</th>
+                    <th>IMAGEN</th>
+                    <th>NOMBRE</th>
+                    <th>PRECIO IVA INC.</th>
+                    <th>DISPONIBILIDAD</th>
+                </tr>
+            </thead>
+            <tbody id="catalog-body">
+                {{ catalog_rows|safe }}
+            </tbody>
+        </table>
+        <div class="no-results" id="no-results-desk">No se encontraron productos</div>
+    </div>
+
+    <!-- ── VISTA MÓVIL: tarjetas (generadas por JS) ── -->
+    <div class="mobile-catalog" id="mobile-catalog"></div>
+    <div class="no-results" id="no-results-mob">No se encontraron productos</div>
+
+    <!-- ── Botón Ver más ── -->
+    <div id="ver-mas-wrap" style="text-align:center; padding: 20px 0 10px; display:none;">
+        <button id="btn-ver-mas" onclick="cargarMas()">
+            Ver más <span id="ver-mas-info"></span>
+        </button>
+    </div>
+
+    <div class="footer">Catálogo Alianxa — Precios en COP con IVA incluido</div>
+
+    <!-- FAB WhatsApp -->
+    <a class="fab-wa" id="fab-wa"
+       href="https://wa.me/{{ whatsapp_phone }}?text=Hola%2C%20vi%20el%20cat%C3%A1logo%20y%20quisiera%20m%C3%A1s%20informaci%C3%B3n"
+       target="_blank" rel="noopener noreferrer" title="Contactar por WhatsApp">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="white">
+            <path d="M16 0C7.163 0 0 7.163 0 16c0 2.822.737 5.469 2.027 7.774L0 32l8.469-2.001A15.934 15.934 0 0016 32c8.837 0 16-7.163 16-16S24.837 0 16 0zm0 29.333a13.27 13.27 0 01-6.771-1.849l-.485-.288-5.027 1.187 1.224-4.896-.317-.502A13.267 13.267 0 012.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.27-9.862c-.398-.199-2.355-1.162-2.72-1.295-.365-.133-.631-.199-.897.199-.266.398-1.03 1.295-1.263 1.561-.232.266-.465.299-.863.1-.398-.2-1.681-.619-3.203-1.977-1.184-1.057-1.983-2.362-2.215-2.76-.232-.398-.025-.613.175-.811.18-.179.398-.465.597-.698.199-.232.266-.398.398-.664.133-.266.066-.498-.033-.697-.1-.199-.897-2.162-1.229-2.96-.324-.778-.653-.673-.897-.685l-.764-.013c-.266 0-.697.1-1.063.498-.365.398-1.395 1.362-1.395 3.325 0 1.962 1.428 3.859 1.627 4.125.199.266 2.81 4.291 6.807 6.018.951.411 1.693.656 2.271.839.954.303 1.822.26 2.509.158.765-.114 2.355-.963 2.688-1.893.332-.93.332-1.727.232-1.893-.099-.166-.365-.266-.763-.465z"/>
+        </svg>
+        <span class="fab-texto-label" id="fab-texto">Pedir por WhatsApp</span>
+        <span class="fab-badge" id="fab-badge">0</span>
+    </a>
+
+    <script>
+    // ── Referencias ───────────────────────────────────────────────────────
+    const tbody       = document.getElementById('catalog-body');
+    const fabWa       = document.getElementById('fab-wa');
+    const fabBadge    = document.getElementById('fab-badge');
+
+    // ── Paginación ────────────────────────────────────────────────────────
+    const PAGE_SIZE = 50;
+    let _visibleRows = [];   // array completo de filas filtradas (desktop)
+    let _visiblePage = 0;    // cuántas páginas ya se mostraron
+
+    function _mostrarPagina(rows, page) {
+        const desde = page * PAGE_SIZE;
+        const hasta = Math.min(desde + PAGE_SIZE, rows.length);
+        rows.slice(desde, hasta).forEach(r => {
+            r.classList.remove('hidden');
+            tbody.appendChild(r);
+        });
+        _visiblePage = page + 1;
+        _actualizarBotonVerMas(rows.length);
+    }
+
+    function cargarMas() {
+        _mostrarPagina(_visibleRows, _visiblePage);
+        // Móvil: también carga las siguientes tarjetas
+        if (esMobil()) _cargarMasTarjetas();
+    }
+
+    function _actualizarBotonVerMas(total) {
+        const wrap = document.getElementById('ver-mas-wrap');
+        const info = document.getElementById('ver-mas-info');
+        const mostrados = Math.min(_visiblePage * PAGE_SIZE, total);
+        if (mostrados < total) {
+            wrap.style.display = 'block';
+            info.textContent = `(${mostrados} de ${total})`;
+        } else {
+            wrap.style.display = 'none';
+        }
+        document.getElementById('result-count').textContent =
+            total === mostrados ? `${total} productos` : `${mostrados} de ${total} productos`;
+    }
+
+    // ── Paginación móvil (tarjetas) ───────────────────────────────────────
+    let _allCardsList = [];   // lista ordenada de tarjetas visibles
+    let _cardPage = 0;
+
+    function _mostrarTarjetasPagina(cards, page) {
+        const desde = page * PAGE_SIZE;
+        const hasta = Math.min(desde + PAGE_SIZE, cards.length);
+        cards.slice(desde, hasta).forEach(c => {
+            c.classList.remove('mobile-hidden-card');
+        });
+        _cardPage = page + 1;
+        _actualizarBotonVerMas(_allCardsList.length);
+    }
+
+    function _cargarMasTarjetas() {
+        _mostrarTarjetasPagina(_allCardsList, _cardPage);
+    }
+    const fabTexto    = document.getElementById('fab-texto');
+    const mobileCat   = document.getElementById('mobile-catalog');
+    const FILTER_STATE_KEY = 'catalogo_cliente_filters_v1';
+
+    function readStoredFilters() {
+        try {
+            const raw = sessionStorage.getItem(FILTER_STATE_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function persistFilters() {
+        try {
+            sessionStorage.setItem(FILTER_STATE_KEY, JSON.stringify({
+                cat: document.getElementById('cat-filter')?.value || '',
+                sort: document.getElementById('sort-filter')?.value || 'az',
+                search: document.getElementById('search-input')?.value.trim() || ''
+            }));
+        } catch (e) {}
+    }
+
+    function restoreFiltersFromState() {
+        const state = readStoredFilters();
+        if (!state) return;
+        const catEl = document.getElementById('cat-filter');
+        const sortEl = document.getElementById('sort-filter');
+        const searchEl = document.getElementById('search-input');
+        const clearBtn = document.getElementById('btn-clear');
+        if (catEl && state.cat !== undefined) catEl.value = state.cat || '';
+        if (sortEl && state.sort !== undefined) sortEl.value = state.sort || 'az';
+        if (searchEl && state.search !== undefined) searchEl.value = state.search || '';
+        if (clearBtn) clearBtn.style.display = (state.search || '').length ? 'block' : 'none';
+    }
+
+    // ── Detectar móvil ────────────────────────────────────────────────────
+    // Usar matchMedia en lugar de innerWidth para que el teclado virtual
+    // no cambie el resultado (el teclado reduce visualViewport pero no innerWidth en algunos Android)
+    const esMobil = () => window.matchMedia('(max-width: 768px)').matches;
+
+    // ── Cotización ────────────────────────────────────────────────────────
+    const cotizacion = {};   // { key: {nombre, ref, precio} }
+
+    function toggleCotizar(chk) {
+        // Puede venir de tabla (chk dentro de <tr>) o de tarjeta (chk dentro de .card)
+        const row  = chk.closest('tr.product-row');
+        const card = chk.closest('.card');
+        const src  = row || card;
+        if (!src) return;
+
+        const nombre = src.dataset.nombre || '';
+        const ref    = src.dataset.ref    || '';
+        const precio = src.dataset.precio || '';
+        const key    = src.dataset.code   || nombre;
+
+        if (chk.checked) {
+            cotizacion[key] = { nombre, ref, precio };
+            src.classList.add('selected');
+            // Sincronizar el otro view
+            syncCheck(key, true);
+        } else {
+            delete cotizacion[key];
+            src.classList.remove('selected');
+            syncCheck(key, false);
+        }
+        actualizarFab();
+    }
+
+    // Mantiene sincronizados los checkboxes de tabla y tarjeta
+    function syncCheck(key, estado) {
+        // Tabla
+        tbody.querySelectorAll('tr.product-row').forEach(r => {
+            if ((r.dataset.code || r.dataset.nombre) === key) {
+                const chk = r.querySelector('.chk-cotizar');
+                if (chk) chk.checked = estado;
+                estado ? r.classList.add('selected') : r.classList.remove('selected');
+            }
+        });
+        // Tarjetas
+        mobileCat.querySelectorAll('.card').forEach(c => {
+            if ((c.dataset.code || c.dataset.nombre) === key) {
+                const chk = c.querySelector('input[type=checkbox]');
+                if (chk) chk.checked = estado;
+                estado ? c.classList.add('selected') : c.classList.remove('selected');
+            }
+        });
+    }
+
+    function actualizarFab() {
+        const total = Object.keys(cotizacion).length;
+        fabBadge.textContent = total;
+        if (total === 0) {
+            fabWa.classList.remove('cotizando');
+            fabTexto.textContent = 'Pedir por WhatsApp';
+            fabWa.href = 'https://wa.me/{{ whatsapp_phone }}?text=' +
+                encodeURIComponent('Hola, vi el catálogo y quisiera más información.');
+        } else {
+            fabWa.classList.add('cotizando');
+            fabTexto.textContent = `Cotizar ${total} producto${total > 1 ? 's' : ''}`;
+            fabWa.href = generarLinkWa();
+        }
+    }
+
+    function generarLinkWa() {
+        const items = Object.values(cotizacion);
+        let msg = '🛒 *Cotización Alianxa*\n';
+        msg += `Hola, me interesa cotizar ${items.length} producto${items.length > 1 ? 's' : ''}:\n\n`;
+        items.forEach((item, i) => {
+            const ref = item.ref ? ` (${item.ref})` : '';
+            msg += `${i + 1}. *${item.nombre}*${ref}\n`;
+            if (item.precio && item.precio !== 'CONTACTAR')
+                msg += `   Precio: ${item.precio}\n`;
+        });
+        msg += '\n¿Podrían confirmarme disponibilidad y forma de pago? Gracias.';
+        return 'https://wa.me/{{ whatsapp_phone }}?text=' + encodeURIComponent(msg);
+    }
+
+    // ── Construir una tarjeta móvil desde una fila de tabla ──────────────
+    function _makeCard(row) {
+        const nombre  = row.dataset.nombre || '';
+        const ref     = row.dataset.ref    || '';
+        const precio  = row.dataset.precio || '';
+        const key     = row.dataset.code   || nombre;
+        const img     = row.dataset.img    || '';
+        const stock   = parseInt(row.dataset.stock || '0');
+        const isContact = precio === 'CONTACTAR';
+        const isChecked = !!cotizacion[key];
+
+        const card = document.createElement('div');
+        card.className = 'card' + (isChecked ? ' selected' : '');
+        card.dataset.category = row.dataset.category || '';
+        card.dataset.name     = row.dataset.name     || '';
+        card.dataset.code     = row.dataset.code     || '';
+        card.dataset.price    = row.dataset.price    || '0';
+        card.dataset.nombre   = nombre;
+        card.dataset.ref      = ref;
+        card.dataset.precio   = precio;
+        card.dataset.stock    = stock;
+
+        card.innerHTML = `
+            <div class="card-check-wrap">
+                <input type="checkbox" ${isChecked ? 'checked' : ''}
+                       onchange="toggleCotizar(this)"
+                       aria-label="Cotizar ${nombre.replace(/"/g,'&quot;')}">
+            </div>
+            <div class="card-img-wrap">
+                ${img
+                    ? `<img src="${img}" alt="${nombre.replace(/"/g,'&quot;')}" loading="lazy">`
+                    : `<div class="card-img-placeholder">📦</div>`
+                }
+            </div>
+            <div class="card-body">
+                ${ref ? `<div class="card-ref">${ref}</div>` : ''}
+                <div class="card-name">${nombre}</div>
+                <div class="card-price ${isContact ? 'contact' : ''}">${precio}</div>
+                <div class="card-stock ${stock > 0 ? 'ok' : 'no'}">
+                    ${stock > 0 ? '✔ Disponible' : 'Consultar'}
+                </div>
+            </div>`;
+        return card;
+    }
+
+    // Crea un label de categoría desplegable
+    function _makeLabel(cat) {
+        const label = document.createElement('div');
+        label.className = 'mobile-cat-label';
+        label.innerHTML = `<span>${cat}</span><span class="cat-arrow">▼</span>`;
+        label.addEventListener('click', () => _toggleCat(label));
+        return label;
+    }
+
+    // Colapsa/expande la grilla siguiente al label
+    function _toggleCat(label) {
+        const grid = label.nextElementSibling;
+        if (!grid || !grid.classList.contains('cards-grid')) return;
+        const collapsing = !label.classList.contains('collapsed');
+        label.classList.toggle('collapsed', collapsing);
+        grid.classList.toggle('collapsed', collapsing);
+    }
+    function applyFilters() {
+        const catFilterEl  = document.getElementById('cat-filter');
+        const sortFilterEl = document.getElementById('sort-filter');
+        const searchInput  = document.getElementById('search-input');
+        const catFilter    = (catFilterEl?.value || '').toUpperCase();
+        const sortMode     = sortFilterEl?.value || 'az';
+        const searchFilter = (searchInput?.value || '').toUpperCase().trim();
+
+        // Persistir el estado para que no se pierda al rotar el móvil o
+        // al abrir/cerrar el teclado virtual.
+        persistFilters();
+
+        // Mantener el estado activo del móvil; si el teclado virtual dispara un resize,
+        // aplicamos los filtros actuales en vez de regenerar el catálogo desde cero.
+        if (esMobil()) {
+            if (searchInput && document.activeElement === searchInput) {
+                searchInput.setAttribute('data-active-search', searchFilter || '');
+            }
+        }
+
+        const allRows = Array.from(tbody.querySelectorAll('tr.product-row'));
+        const allCat  = Array.from(tbody.querySelectorAll('tr.category-row'));
+
+        let visible = allRows.filter(row => {
+            const mc = !catFilter    || (row.dataset.category||'').toUpperCase() === catFilter;
+            const ms = !searchFilter || (row.dataset.name||'').includes(searchFilter)
+                                     || (row.dataset.code||'').includes(searchFilter);
+            return mc && ms;
+        });
+
+        visible.sort((a, b) => {
+            if (sortMode === 'price-desc') return parseFloat(b.dataset.price||0) - parseFloat(a.dataset.price||0);
+            if (sortMode === 'price-asc')  return parseFloat(a.dataset.price||0) - parseFloat(b.dataset.price||0);
+            if (sortMode === 'za')  return (b.dataset.name||'').localeCompare(a.dataset.name||'', 'es');
+            return (a.dataset.name||'').localeCompare(b.dataset.name||'', 'es');
+        });
+
+        const byPrice = sortMode === 'price-asc' || sortMode === 'price-desc';
+
+        // ── Desktop: ocultar todo, luego mostrar primera página ──
+        allRows.forEach(r => r.classList.add('hidden'));
+        allCat.forEach(r  => r.classList.add('hidden'));
+
+        // Guardar lista completa para paginación
+        _visibleRows = visible;
+        _visiblePage = 0;
+
+        if (byPrice) {
+            // Mover al DOM en orden correcto (todas ocultas primero)
+            visible.forEach(r => tbody.appendChild(r));
+        } else {
+            const cats = [...new Set(visible.map(r => r.dataset.category||''))];
+            cats.forEach(cat => {
+                const banner = allCat.find(r => (r.dataset.category||'') === cat);
+                if (banner) tbody.appendChild(banner);
+                visible.filter(r => r.dataset.category === cat).forEach(r => tbody.appendChild(r));
+            });
+        }
+
+        // Mostrar primera página
+        _mostrarPagina(visible, 0);
+
+        // Mostrar/ocultar banners de categoría según lo que quedó visible
+        if (!byPrice) {
+            const cats = [...new Set(visible.slice(0, PAGE_SIZE).map(r => r.dataset.category||''))];
+            allCat.forEach(r => {
+                if (cats.includes(r.dataset.category||'')) r.classList.remove('hidden');
+            });
+        }
+
+        document.getElementById('no-results-desk').style.display =
+            visible.length === 0 ? 'block' : 'none';
+
+        // ── Móvil: reconstruir tarjetas desde cero con los resultados filtrados ──
+        // Se reconstruye siempre — en desktop .mobile-catalog está oculto por CSS
+        {
+            mobileCat.innerHTML = '';
+            _allCardsList = [];
+
+            if (visible.length === 0) {
+                document.getElementById('no-results-mob').style.display = 'block';
+                _actualizarBotonVerMas(0);
+            } else {
+                document.getElementById('no-results-mob').style.display = 'none';
+
+                if (byPrice) {
+                    // Una sola grilla plana sin labels de categoría
+                    const grid = document.createElement('div');
+                    grid.className = 'cards-grid' + (currentCardView === 'list' ? ' view-list' : '');
+                    mobileCat.appendChild(grid);
+                    visible.forEach(row => {
+                        const card = _makeCard(row);
+                        grid.appendChild(card);
+                        _allCardsList.push(card);
+                    });
+                } else {
+                    const cats = [...new Set(visible.map(r => r.dataset.category||''))];
+                    cats.forEach(cat => {
+                        const label = _makeLabel(cat);
+                        mobileCat.appendChild(label);
+                        const grid = document.createElement('div');
+                        grid.className = 'cards-grid' + (currentCardView === 'list' ? ' view-list' : '');
+                        mobileCat.appendChild(grid);
+                        visible.filter(r => r.dataset.category === cat).forEach(row => {
+                            const card = _makeCard(row);
+                            grid.appendChild(card);
+                            _allCardsList.push(card);
+                        });
+                    });
+                }
+
+                // Ocultar todo y mostrar primera página
+                _allCardsList.forEach(c => c.classList.add('mobile-hidden-card'));
+                _cardPage = 0;
+                _allCardsList.slice(0, PAGE_SIZE).forEach(c => c.classList.remove('mobile-hidden-card'));
+                _cardPage = 1;
+            }
+        }
+
+        // Actualizar contador con el total real filtrado (único punto de verdad)
+        const mostrados = Math.min(PAGE_SIZE, visible.length);
+        const wrap = document.getElementById('ver-mas-wrap');
+        const info = document.getElementById('ver-mas-info');
+        if (mostrados < visible.length) {
+            wrap.style.display = 'block';
+            info.textContent = `(${mostrados} de ${visible.length})`;
+        } else {
+            wrap.style.display = 'none';
+        }
+        document.getElementById('result-count').textContent =
+            visible.length === mostrados
+                ? `${visible.length} productos`
+                : `${mostrados} de ${visible.length} productos`;
+        document.getElementById('no-results-desk').style.display =
+            visible.length === 0 ? 'block' : 'none';
+    }
+
+    // ── Borrar búsqueda ──────────────────────────────────────────────────
+    function clearSearch() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.value = '';
+        const clearBtn = document.getElementById('btn-clear');
+        if (clearBtn) clearBtn.style.display = 'none';
+        sessionStorage.removeItem(FILTER_STATE_KEY);
+        applyFilters();
+    }
+
+    // ── Toggle vista cuadrícula/lista (móvil) ────────────────────────────
+    let currentCardView = localStorage.getItem('cardView') || 'grid';
+
+    function setCardView(mode) {
+        currentCardView = mode;
+        localStorage.setItem('cardView', mode);
+        document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+        document.getElementById('btnList').classList.toggle('active', mode === 'list');
+        mobileCat.querySelectorAll('.cards-grid').forEach(g => {
+            g.classList.toggle('view-list', mode === 'list');
+        });
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        // ── Desktop: ocultar todo y mostrar primera página ──
+        const allRows = Array.from(tbody.querySelectorAll('tr.product-row'));
+        const allCat  = Array.from(tbody.querySelectorAll('tr.category-row'));
+        allRows.forEach(r => r.classList.add('hidden'));
+        allCat.forEach(r  => r.classList.add('hidden'));
+
+        _visibleRows = allRows;
+        _visiblePage = 0;
+        _mostrarPagina(allRows, 0);
+
+        // Si la primera página ya se renderizó, asegurarnos de cerrar el splash
+        // sin consumir el token más de una vez.
+        setTimeout(() => {
+            try {
+                const splashEl = document.getElementById('splash');
+                const barEl = document.getElementById('progress-bar');
+                if (barEl) barEl.style.width = '100%';
+                if (splashEl) {
+                    splashEl.classList.add('oculto');
+                    splashEl.style.display = 'none';
+                }
+            } catch (e) { /* no bloquear */ }
+        }, 150);
+
+        // Mostrar banners de categorías de la primera página
+        const primeraPagCats = new Set(allRows.slice(0, PAGE_SIZE).map(r => r.dataset.category||''));
+        allCat.forEach(r => { if (primeraPagCats.has(r.dataset.category||'')) r.classList.remove('hidden'); });
+
+        // ── Móvil: usar applyFilters para construir todo desde cero ──
+        // applyFilters ya maneja el caso móvil correctamente (reconstruye DOM,
+        // pagina, actualiza contador). Más simple que duplicar la lógica aquí.
+        if (currentCardView === 'list') setCardView('list');
+        restoreFiltersFromState();
+        const savedState = readStoredFilters();
+        if (savedState && (savedState.cat || savedState.sort !== 'az' || savedState.search)) {
+            applyFilters();
+        } else {
+            _initMobil();
+        }
+
+        actualizarFab();
+    });
+
+    // Inicializa la vista móvil mostrando todos los productos (sin filtros)
+    function _initMobil() {
+        const allRows = Array.from(tbody.querySelectorAll('tr.product-row'));
+        mobileCat.innerHTML = '';
+        _allCardsList = [];
+        // Build only the first PAGE_SIZE cards synchronously to avoid blocking
+        // the main thread for large catalogs. The rest are generated in
+        // background chunks to keep the UI responsive.
+        const cats = [...new Set(allRows.map(r => r.dataset.category||''))];
+        let built = 0;
+        cats.forEach(cat => {
+            const label = _makeLabel(cat);
+            mobileCat.appendChild(label);
+            const grid = document.createElement('div');
+            grid.className = 'cards-grid' + (currentCardView === 'list' ? ' view-list' : '');
+            mobileCat.appendChild(grid);
+            const rows = allRows.filter(r => r.dataset.category === cat);
+            for (let i = 0; i < rows.length; i++) {
+                if (built < PAGE_SIZE) {
+                    const card = _makeCard(rows[i]);
+                    grid.appendChild(card);
+                    _allCardsList.push(card);
+                    built += 1;
+                } else {
+                    // leave placeholders for the rest; they'll be built asynchronously
+                    break;
+                }
+            }
+        });
+
+        // Hide all built cards then show the first page
+        _allCardsList.forEach(c => c.classList.add('mobile-hidden-card'));
+        _cardPage = 0;
+        _allCardsList.slice(0, PAGE_SIZE).forEach(c => c.classList.remove('mobile-hidden-card'));
+        _cardPage = 1;
+        _actualizarBotonVerMas(/*total=*/ allRows.length);
+
+        // Asynchronously build remaining cards in small chunks to avoid UI freeze
+        (function buildRemaining() {
+            const CHUNK = 80; // rows per chunk
+            let remaining = [];
+            cats.forEach(cat => {
+                const rows = allRows.filter(r => r.dataset.category === cat);
+                remaining = remaining.concat(rows);
+            });
+            // Skip already built
+            remaining = remaining.slice(_allCardsList.length);
+            if (remaining.length === 0) return;
+            let idx = 0;
+            function chunk() {
+                const end = Math.min(idx + CHUNK, remaining.length);
+                for (; idx < end; idx++) {
+                    const row = remaining[idx];
+                    // find the grid for its category
+                    const grid = Array.from(mobileCat.querySelectorAll('.cards-grid')).find(g => {
+                        const prev = g.previousElementSibling;
+                        return prev && prev.classList && prev.classList.contains('mobile-cat-label') && prev.textContent.trim().startsWith((row.dataset.category||'').trim());
+                    }) || mobileCat.querySelector('.cards-grid');
+                    if (!grid) continue;
+                    const card = _makeCard(row);
+                    grid.appendChild(card);
+                    _allCardsList.push(card);
+                }
+                // schedule next chunk
+                if (idx < remaining.length) setTimeout(chunk, 30);
+                else _actualizarBotonVerMas(_allCardsList.length);
+            }
+            setTimeout(chunk, 50);
+        })();
+    }
+
+    // Reconstruir tarjetas si se rota el dispositivo (con debounce para no congelar)
+    // IMPORTANTE: si el usuario está buscando o filtrando, preservamos el estado y
+    // no reinicializamos el catálogo completo porque eso borra la búsqueda activa y
+    // hace desaparecer tarjetas/imágenes ya renderizadas.
+    let _resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(() => {
+            const state = readStoredFilters();
+            const catFilter = document.getElementById('cat-filter')?.value || '';
+            const sortMode = document.getElementById('sort-filter')?.value || 'az';
+            const searchFilter = document.getElementById('search-input')?.value.trim() || '';
+            const activeFilters = !!(catFilter || sortMode !== 'az' || searchFilter || (state && (state.cat || state.sort !== 'az' || state.search)));
+            if (activeFilters) {
+                applyFilters();
+            } else {
+                sessionStorage.removeItem(FILTER_STATE_KEY);
+                _initMobil();
+            }
+        }, 250);
+    });
+
+    </script>
+    <script>
+    (function(){
+        // Consumir el token de un solo uso exactamente una vez.
+        try {
+            const token = "{{ token }}";
+            if (!token) return;
+
+            if (window.__catalogTokenConsumed) return;
+            window.__catalogTokenConsumed = true;
+
+            function consume() {
+                fetch(`/consume-token/${token}`, { method: 'POST' })
+                    .catch(() => {});
+            }
+
+            // Se consume solo cuando la vista ya quedó lista; si no existe splash,
+            // lo hacemos en el siguiente tick para evitar que el acceso quede colgado.
+            const splash = document.getElementById('splash');
+            if (splash) {
+                let attempts = 0;
+                const maxAttempts = 40;
+                const iv = setInterval(() => {
+                    attempts += 1;
+                    const hidden = splash.style.display === 'none' || splash.classList.contains('oculto');
+                    if (hidden || attempts >= maxAttempts) {
+                        clearInterval(iv);
+                        setTimeout(consume, 120);
+                    }
+                }, 200);
+            } else {
+                setTimeout(consume, 300);
+            }
+        } catch (e) {
+            // Never crash the page
+        }
+    })();
+    </script>
+</body>
+</html>

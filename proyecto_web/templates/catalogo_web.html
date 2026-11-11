@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Precios - Alianxa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; color: #333; }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white;
+            padding: 18px 24px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header h1   { font-size: 1.2rem; margin-bottom: 3px; }
+        .header .sub { font-size: 0.75rem; opacity: 0.65; font-style: italic; }
+        .header .date{ font-size: 0.73rem; opacity: 0.55; margin-top: 3px; }
+        .header .client {
+            font-size: 0.82rem; margin-top: 6px;
+            color: #a8d4ff; font-weight: 600;
+        }
+
+        /* ── Filters ── */
+        .filters {
+            background: white;
+            padding: 12px 18px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 77px;
+            z-index: 99;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .filters label { font-weight: 600; font-size: 0.83rem; color: #1a2a4a; white-space: nowrap; }
+        .filters select {
+            padding: 7px 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+            min-width: 150px;
+        }
+        .filters select:focus { border-color: #2d4a7a; }
+        .filters .count { font-size: 0.78rem; color: #666; margin-left: auto; white-space: nowrap; }
+
+        /* Buscador con botón ✕ y lupa */
+        .search-wrap {
+            display: flex;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+            flex: 1;
+            min-width: 180px;
+            transition: border-color 0.2s;
+        }
+        .search-wrap:focus-within { border-color: #2d4a7a; }
+        .search-wrap input {
+            flex: 1; border: none; border-radius: 0;
+            padding: 7px 11px; font-size: 0.88rem;
+            outline: none; background: white; min-width: 0;
+        }
+        .btn-clear {
+            background: none; border: none;
+            padding: 7px 10px; cursor: pointer;
+            color: #999; font-size: 1rem;
+            transition: color 0.2s; line-height: 1; display: none;
+        }
+        .btn-clear:hover { color: #e53935; }
+        .btn-lupa {
+            background: #2d4a7a; border: none;
+            padding: 7px 12px; cursor: pointer;
+            color: white; font-size: 0.9rem;
+            transition: background 0.2s; line-height: 1;
+        }
+        .btn-lupa:hover { background: #1a2a4a; }
+
+        /* ── Tabla ── */
+        .catalog-container { padding: 14px; max-width: 1200px; margin: 0 auto; }
+
+        .catalog-table {
+            width: 100%; border-collapse: collapse;
+            background: white; border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 8px;
+        }
+        .catalog-table thead th {
+            background: #2E75B6; color: white;
+            font-size: 0.78rem; padding: 9px 7px;
+            text-align: center; font-weight: 600;
+            position: sticky; top: 125px; z-index: 50;
+        }
+        .catalog-table thead tr th:first-child { border-radius: 8px 0 0 0; }
+        .catalog-table thead tr th:last-child  { border-radius: 0 8px 0 0; }
+        .catalog-table tbody tr {
+            border-bottom: 1px solid #eee; transition: background 0.15s;
+        }
+        .catalog-table tbody tr:hover { background: #f0f5ff; }
+        .catalog-table tbody tr.hidden { display: none; }
+        .catalog-table td { padding: 8px 7px; font-size: 0.84rem; vertical-align: middle; }
+
+        .col-code  { text-align: center; font-weight: 600; width: 130px; font-size: 0.78rem; }
+        .col-img   { text-align: center; width: 62px; }
+        .col-img img { width: 48px; height: 48px; object-fit: contain; border-radius: 4px; border: 1px solid #eee; }
+        .col-name  { font-weight: 600; font-size: 0.88rem; }
+        .col-price { text-align: center; font-weight: 700; color: #1a2a4a; font-size: 0.95rem; width: 130px; }
+        .col-price.contact { color: #888; font-style: italic; font-weight: 400; font-size: 0.8rem; }
+        .col-stock { text-align: center; width: 150px; font-size: 0.8rem; }
+        .col-stock.available   { color: #2e7d32; font-weight: 600; }
+        .col-stock.unavailable { color: #999; font-style: italic; }
+        .col-dcto  { text-align: center; width: 70px; color: #1b5e20; font-weight: 800; font-size: 1rem; }
+
+        .category-row td {
+            background: #1a2a4a !important; color: white !important;
+            font-weight: 700; font-size: 0.87rem; padding: 8px 14px;
+        }
+
+        .no-results {
+            text-align: center; padding: 40px;
+            color: #888; font-size: 0.95rem; display: none;
+        }
+
+        /* ── Botón Ver más ── */
+        #btn-ver-mas {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white; border: none; border-radius: 25px;
+            padding: 12px 32px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; letter-spacing: 0.5px;
+            box-shadow: 0 3px 12px rgba(45,74,122,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #btn-ver-mas:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(45,74,122,0.4); }
+        #ver-mas-info { font-size: 0.8rem; opacity: 0.75; }
+
+        .footer {
+            text-align: center; padding: 20px;
+            font-size: 0.75rem; color: #999;
+        }
+
+        /* ── Responsive móvil ── */
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; }
+            .header h1 { font-size: 1rem; }
+            .filters {
+                flex-direction: column; gap: 8px;
+                padding: 10px 12px; top: 60px;
+            }
+            .filters label { display: none; }
+            .filters select { width: 100%; font-size: 0.9rem; }
+            .search-wrap { width: 100%; }
+            .filters .count { margin-left: 0; }
+
+            /* En móvil ocultar columnas menos importantes */
+            .col-img   { display: none; }
+            .col-img + th { display: none; }
+            .catalog-table thead th:nth-child(2) { display: none; } /* CÓDIGO */
+            .catalog-table thead th:nth-child(3) { display: none; } /* IMAGEN */
+            .col-code { display: none; }
+            .col-dcto { display: none; }
+            .catalog-table thead th:last-child { display: none; }
+
+            .catalog-table td { padding: 7px 5px; font-size: 0.8rem; }
+            .col-price { font-size: 0.85rem; width: 100px; }
+            .col-stock { width: 90px; font-size: 0.72rem; }
+        }
+
+        /* Tipografía ligeramente mayor para facilitar la lectura. */
+        .filters label { font-size: 0.9rem; }
+        .filters select,
+        .search-wrap input { font-size: 0.95rem; }
+        .filters .count { font-size: 0.85rem; }
+        .catalog-table thead th { font-size: 0.84rem; }
+        .catalog-table td { font-size: 0.9rem; }
+        .col-code { font-size: 0.84rem; }
+        .col-name { font-size: 0.94rem; }
+        .col-price { font-size: 1.02rem; }
+        .col-price.contact,
+        .col-stock { font-size: 0.86rem; }
+        .category-row td { font-size: 0.94rem; }
+
+        @media (max-width: 768px) {
+            .catalog-table td { font-size: 0.86rem; }
+            .col-price { font-size: 0.94rem; }
+            .col-stock { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 LISTA DE PRECIOS — IVA INCLUIDO</h1>
+        <div class="sub">Sujeta a cambios. No constituye propuesta comercial firme.</div>
+        <div class="date">Actualizado: {{ fecha }}</div>
+        {% if nombre_cliente %}
+        <div class="client">Hola, {{ nombre_cliente }}</div>
+        {% endif %}
+    </div>
+
+    <div class="filters">
+        <label for="cat-filter">Categoría:</label>
+        <select id="cat-filter" onchange="applyFilters()">
+            <option value="">TODAS ({{ categorias|length }})</option>
+            {% for cat in categorias %}
+            <option value="{{ cat }}">{{ cat }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="sort-filter">Ordenar:</label>
+        <select id="sort-filter" onchange="applyFilters()">
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="price-desc">Precio: Mayor → Menor</option>
+            <option value="price-asc">Precio: Menor → Mayor</option>
+        </select>
+
+        <label for="search-input">Buscar:</label>
+        <div class="search-wrap">
+            <input type="text" id="search-input"
+                   placeholder="Buscar producto o código..."
+                   oninput="applyFilters()"
+                   onkeydown="if(event.key==='Escape') clearSearch()">
+            <button class="btn-clear" id="btn-clear" onclick="clearSearch()" title="Borrar búsqueda">✕</button>
+            <button class="btn-lupa" onclick="applyFilters()" title="Buscar">🔍</button>
+        </div>
+
+        <span class="count" id="result-count"></span>
+    </div>
+
+    <div class="catalog-container">
+        <table class="catalog-table">
+            <thead>
+                <tr>
+                    <th>CÓDIGO</th>
+                    <th>IMAGEN</th>
+                    <th>NOMBRE</th>
+                    <th>VALOR IVA INC.</th>
+                    <th>DISPONIBLE</th>
+                    <th>DCTO VOL.</th>
+                </tr>
+            </thead>
+            <tbody id="catalog-body">
+                {% for cat, items in productos_por_categoria.items() %}
+                <tr class="category-row" data-category="{{ cat }}">
+                    <td colspan="6">{{ cat }}</td>
+                </tr>
+                {% for item in items %}
+                <tr class="product-row"
+                    data-category="{{ cat }}"
+                    data-name="{{ item.nombre|upper }}"
+                    data-code="{{ item.referencia|upper }}"
+                    data-price="{{ item.precio_con_iva }}">
+                    <td class="col-code">{{ item.referencia }}</td>
+                    <td class="col-img">
+                        {% if item.imagen_url %}
+                        <img src="{{ item.imagen_url }}" alt="{{ item.nombre }}" loading="lazy">
+                        {% endif %}
+                    </td>
+                    <td class="col-name">{{ item.nombre }}</td>
+                    <td class="col-price {{ 'contact' if item.precio_con_iva <= 10 }}">
+                        {{ item.precio_formato }}
+                    </td>
+                    <td class="col-stock {{ 'available' if item.stock > 0 else 'unavailable' }}">
+                        {{ "✔ Disponible" if item.stock > 0 else "Consultar" }}
+                    </td>
+                    <td class="col-dcto">{% if item.dcto_volumen %}✓{% endif %}</td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="no-results" id="no-results">No se encontraron productos</div>
+    </div>
+
+    <!-- Botón Ver más -->
+    <div id="ver-mas-wrap" style="text-align:center; padding: 20px 0 10px; display:none;">
+        <button id="btn-ver-mas" onclick="cargarMas()">
+            Ver más <span id="ver-mas-info"></span>
+        </button>
+    </div>
+
+    <div class="footer">Catálogo Alianxa — Precios en COP con IVA incluido</div>
+
+    <script>
+        const tbody = document.getElementById('catalog-body');
+        const PAGE_SIZE = 50;
+        let _visibleRows = [];
+        let _visiblePage = 0;
+
+        // ── Paginación ────────────────────────────────────────────────────
+        function _mostrarPagina(rows, page) {
+            const desde = page * PAGE_SIZE;
+            const hasta = Math.min(desde + PAGE_SIZE, rows.length);
+            rows.slice(desde, hasta).forEach(r => {
+                r.classList.remove('hidden');
+                tbody.appendChild(r);
+            });
+            _visiblePage = page + 1;
+            _actualizarBotonVerMas(rows.length);
+        }
+
+        function cargarMas() {
+            _mostrarPagina(_visibleRows, _visiblePage);
+        }
+
+        function _actualizarBotonVerMas(total) {
+            const wrap     = document.getElementById('ver-mas-wrap');
+            const info     = document.getElementById('ver-mas-info');
+            const mostrados = Math.min(_visiblePage * PAGE_SIZE, total);
+            if (mostrados < total) {
+                wrap.style.display = 'block';
+                info.textContent = `(${mostrados} de ${total})`;
+            } else {
+                wrap.style.display = 'none';
+            }
+            document.getElementById('result-count').textContent =
+                total === mostrados ? `${total} productos` : `${mostrados} de ${total} productos`;
+        }
+
+        // ── Buscador: mostrar/ocultar botón ✕ ────────────────────────────
+        document.getElementById('search-input').addEventListener('input', function() {
+            document.getElementById('btn-clear').style.display = this.value ? 'block' : 'none';
+        });
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('btn-clear').style.display = 'none';
+            applyFilters();
+        }
+
+        // ── Filtros ───────────────────────────────────────────────────────
+        function applyFilters() {
+            const catFilter    = document.getElementById('cat-filter').value.toUpperCase();
+            const sortMode     = document.getElementById('sort-filter').value;
+            const searchFilter = document.getElementById('search-input').value.toUpperCase().trim();
+
+            const allRows = Array.from(tbody.querySelectorAll('tr.product-row'));
+            const allCat  = Array.from(tbody.querySelectorAll('tr.category-row'));
+
+            let visible = allRows.filter(row => {
+                const mc = !catFilter    || (row.dataset.category||'').toUpperCase() === catFilter;
+                const ms = !searchFilter || (row.dataset.name||'').includes(searchFilter)
+                                         || (row.dataset.code||'').includes(searchFilter);
+                return mc && ms;
+            });
+
+            visible.sort((a, b) => {
+                if (sortMode === 'price-desc') return parseFloat(b.dataset.price||0) - parseFloat(a.dataset.price||0);
+                if (sortMode === 'price-asc')  return parseFloat(a.dataset.price||0) - parseFloat(b.dataset.price||0);
+                if (sortMode === 'za')  return (b.dataset.name||'').localeCompare(a.dataset.name||'', 'es');
+                return (a.dataset.name||'').localeCompare(b.dataset.name||'', 'es');
+            });
+
+            const byPrice = sortMode === 'price-asc' || sortMode === 'price-desc';
+
+            allRows.forEach(r => r.classList.add('hidden'));
+            allCat.forEach(r  => r.classList.add('hidden'));
+
+            _visibleRows = visible;
+            _visiblePage = 0;
+
+            if (byPrice) {
+                visible.forEach(r => tbody.appendChild(r));
+            } else {
+                const cats = [...new Set(visible.map(r => r.dataset.category||''))];
+                cats.forEach(cat => {
+                    const banner = allCat.find(r => (r.dataset.category||'') === cat);
+                    if (banner) tbody.appendChild(banner);
+                    visible.filter(r => r.dataset.category === cat).forEach(r => tbody.appendChild(r));
+                });
+            }
+
+            _mostrarPagina(visible, 0);
+
+            if (!byPrice) {
+                const cats = [...new Set(visible.slice(0, PAGE_SIZE).map(r => r.dataset.category||''))];
+                allCat.forEach(r => {
+                    if (cats.includes(r.dataset.category||'')) r.classList.remove('hidden');
+                });
+            }
+
+            document.getElementById('no-results').style.display =
+                visible.length === 0 ? 'block' : 'none';
+        }
+
+        // ── Init ──────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const allRows = Array.from(tbody.querySelectorAll('tr.product-row'));
+            const allCat  = Array.from(tbody.querySelectorAll('tr.category-row'));
+            allRows.forEach(r => r.classList.add('hidden'));
+            allCat.forEach(r  => r.classList.add('hidden'));
+
+            _visibleRows = allRows;
+            _visiblePage = 0;
+            _mostrarPagina(allRows, 0);
+
+            const primeraPagCats = new Set(allRows.slice(0, PAGE_SIZE).map(r => r.dataset.category||''));
+            allCat.forEach(r => { if (primeraPagCats.has(r.dataset.category||'')) r.classList.remove('hidden'); });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Actualización automática del catálogo (hora America/Bogota).
+# Pasos de imágenes (descarga + Cloudinary) solo los domingos a las 3am.
+# De lunes a sábado y corridas del día se usa --skip-images (solo datos).
+# Hoja INVENTARIO_BODEGAS: 08:00, 15:00 y 18:00; solo esas tareas suben el archivo.
+# min hora * * *   comando
+0  3  * * 1-6  cd /app && python actualizar_catalogo.py --skip-images --wait-for-lock >> /app/data/cron_catalogo.log 2>&1; echo "[cron] exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0  3  * * 0    cd /app && python actualizar_catalogo.py --wait-for-lock >> /app/data/cron_catalogo.log 2>&1; echo "[cron] exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0  10 * * *    cd /app && python actualizar_catalogo.py --skip-images --wait-for-lock >> /app/data/cron_catalogo.log 2>&1; echo "[cron] exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0  13 * * *    cd /app && python actualizar_catalogo.py --skip-images --wait-for-lock >> /app/data/cron_catalogo.log 2>&1; echo "[cron] exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0  16 * * *    cd /app && python actualizar_catalogo.py --skip-images --wait-for-lock >> /app/data/cron_catalogo.log 2>&1; echo "[cron] exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0  17 * * *    cd /app && python actualizar_catalogo.py --skip-images --wait-for-lock >> /app/data/cron_catalogo.log 2>&1; echo "[cron] exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0 8  * * *    cd /app && python -m excel_ai.inventario_bodegas --forzar --upload >> /app/data/cron_catalogo.log 2>&1; echo "[cron] inventario_bodegas exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0 15 * * *    cd /app && python -m excel_ai.inventario_bodegas --forzar --upload >> /app/data/cron_catalogo.log 2>&1; echo "[cron] inventario_bodegas exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+0 18 * * *    cd /app && python -m excel_ai.inventario_bodegas --forzar --upload >> /app/data/cron_catalogo.log 2>&1; echo "[cron] inventario_bodegas exit=$? $(date '+\%Y-\%m-\%d \%H:\%M:\%S')" >> /app/data/cron_catalogo.log
+
+# actualizar_catalogo.py ya sincroniza precio_cliente y regenera los cachés públicos.
+# No programar actualizar_catalogo_publico.py: se solaparía con la sincronización principal.
+# exit=0 → OK | exit=1 → error Python | exit=137 → SIGKILL (OOM u otro kill externo)
+# (línea en blanco final requerida por cron)

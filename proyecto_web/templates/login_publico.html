@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Alianxa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a4a 0%, #2d4a7a 50%, #1a3a5a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px 40px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .icon { font-size: 2.8rem; margin-bottom: 10px; }
+
+        h1 {
+            color: #1a2a4a;
+            font-size: 1.45rem;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.88rem;
+            margin-bottom: 28px;
+            line-height: 1.4;
+        }
+
+        .error {
+            background: #fff3f3;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+            padding: 11px 14px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 7px;
+            font-size: 0.88rem;
+        }
+
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 13px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.25s;
+            outline: none;
+            color: #222;
+        }
+
+        input:focus { border-color: #2d4a7a; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 4px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26,42,74,0.3);
+        }
+
+        .btn:disabled {
+            background: #999;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 14px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 24px; height: 24px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #2d4a7a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 8px;
+        }
+
+        .loading p { color: #666; font-size: 0.83rem; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0 8px;
+            color: #bbb;
+            font-size: 0.8rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .btn-whatsapp {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.97rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37,211,102,0.35);
+            background: #1ebe5d;
+        }
+
+        .note {
+            margin-top: 22px;
+            color: #aaa;
+            font-size: 0.75rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">🛒</div>
+        <h1>Catálogo de Productos</h1>
+        <p class="subtitle">Consulta precios actualizados.<br>Solo necesitamos tu nombre y teléfono.</p>
+
+        {% if error %}
+        <div class="error">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/publico/ingresar" onsubmit="return handleSubmit()">
+            <div class="form-group">
+                <label for="nombre">Nombre completo</label>
+                <input
+                    type="text"
+                    id="nombre"
+                    name="nombre"
+                    placeholder="Ej: Juan García"
+                    required
+                    autofocus
+                    autocomplete="name"
+                    maxlength="200"
+                >
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono o celular</label>
+                <input
+                    type="tel"
+                    id="telefono"
+                    name="telefono"
+                    placeholder="Ej: celular"
+                    required
+                    inputmode="tel"
+                    maxlength="20"
+                >
+            </div>
+
+            <button type="submit" class="btn" id="btnVer">Ver catálogo de precios</button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cargando catálogo...</p>
+            </div>
+        </form>
+
+        <div class="divider">o contáctanos</div>
+
+        <a class="btn-whatsapp"
+           href="https://wa.me/{{ whatsapp_phone }}?text=Hola%2C%20quisiera%20informaci%C3%B3n%20sobre%20productos%20Alianxa"
+           target="_blank" rel="noopener noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32" fill="white">
+                <path d="M16 0C7.163 0 0 7.163 0 16c0 2.822.737 5.469 2.027 7.774L0 32l8.469-2.001A15.934 15.934 0 0016 32c8.837 0 16-7.163 16-16S24.837 0 16 0zm0 29.333a13.27 13.27 0 01-6.771-1.849l-.485-.288-5.027 1.187 1.224-4.896-.317-.502A13.267 13.267 0 012.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.27-9.862c-.398-.199-2.355-1.162-2.72-1.295-.365-.133-.631-.199-.897.199-.266.398-1.03 1.295-1.263 1.561-.232.266-.465.299-.863.1-.398-.2-1.681-.619-3.203-1.977-1.184-1.057-1.983-2.362-2.215-2.76-.232-.398-.025-.613.175-.811.18-.179.398-.465.597-.698.199-.232.266-.398.398-.664.133-.266.066-.498-.033-.697-.1-.199-.897-2.162-1.229-2.96-.324-.778-.653-.673-.897-.685l-.764-.013c-.266 0-.697.1-1.063.498-.365.398-1.395 1.362-1.395 3.325 0 1.962 1.428 3.859 1.627 4.125.199.266 2.81 4.291 6.807 6.018.951.411 1.693.656 2.271.839.954.303 1.822.26 2.509.158.765-.114 2.355-.963 2.688-1.893.332-.93.332-1.727.232-1.893-.099-.166-.365-.266-.763-.465z"/>
+            </svg>
+            Contactar por WhatsApp
+        </a>
+
+        <p class="note">La información de precios está sujeta a cambios sin previo aviso.</p>
+    </div>
+
+    <script>
+        function handleSubmit() {
+            const nombre   = document.getElementById('nombre').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            if (!nombre || nombre.length < 2) return false;
+            if (!telefono || telefono.replace(/\D/g, '').length < 7) return false;
+
+            document.getElementById('btnVer').disabled = true;
+            document.getElementById('btnVer').textContent = 'Cargando...';
+            document.getElementById('loading').style.display = 'block';
+            return true;
+        }
+    </script>
+</body>
+</html>

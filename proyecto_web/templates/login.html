@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Precios - Acceso</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a4a 0%, #2d4a7a 50%, #1a3a5a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .logo {
+            width: 200px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #1a2a4a;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2d4a7a;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26, 42, 74, 0.3);
+        }
+
+        .error {
+            background: #fff3f3;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            margin-top: 30px;
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        .btn-whatsapp {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 13px;
+            margin-top: 12px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
+            background: #1ebe5d;
+        }
+
+        .btn-whatsapp svg {
+            flex-shrink: 0;
+        }
+
+        .public-catalog-link {
+            display: block;
+            margin-top: 14px;
+            padding: 12px;
+            border: 2px solid #2d4a7a;
+            border-radius: 10px;
+            color: #2d4a7a;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .public-catalog-link:hover {
+            background: #2d4a7a;
+            color: white;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 18px 0 6px;
+            color: #bbb;
+            font-size: 0.8rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>📋 Catálogo de Productos</h1>
+        <p class="subtitle">Ingresa tu cédula para acceder al catálogo de precios</p>
+
+        {% if error %}
+        <div class="error">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/auth" onsubmit="showLoading()">
+            <input type="hidden" name="modo" value="{{ modo }}">
+            <div class="form-group">
+                <label for="tipo_doc">Tipo de documento</label>
+                <select id="tipo_doc" name="tipo_doc"
+                        style="width:100%;padding:14px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:1rem;outline:none;background:white;cursor:pointer;transition:border-color 0.3s;"
+                        onfocus="this.style.borderColor='#2d4a7a'" onblur="this.style.borderColor='#e0e0e0'"
+                        onchange="ajustarCampoDoc(this.value)">
+                    <option value="CC" {% if tipo_doc == 'CC' or not tipo_doc %}selected{% endif %}>CC — Cédula de ciudadanía</option>
+                    <option value="NIT" {% if tipo_doc == 'NIT' %}selected{% endif %}>NIT — Número de identificación tributaria</option>
+                    <option value="DIE" {% if tipo_doc == 'DIE' %}selected{% endif %}>DIE — Doc. de identificación extranjera</option>
+                    <option value="PEP" {% if tipo_doc == 'PEP' %}selected{% endif %}>PPT — Permiso</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cedula">Número de documento</label>
+                <input type="text" id="cedula" name="cedula"
+                       placeholder="Ej: celular"
+                       required autofocus
+                       inputmode="numeric"
+                       pattern="[0-9]*">
+            </div>
+            <button type="submit" class="btn" id="btnSubmit">Acceder al Catálogo</button>
+            <div id="loginLoading" style="display:none; margin-top: 15px; text-align: center;">
+                <div style="width:25px;height:25px;border:3px solid #e0e0e0;border-top:3px solid #2d4a7a;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;"></div>
+                <p style="color:#666;font-size:0.85rem;margin-top:8px;">Consultando y generando catálogo...</p>
+            </div>
+        </form>
+
+        <div class="divider">o contáctanos</div>
+        <a class="btn-whatsapp"
+           href="https://wa.me/{{ whatsapp_phone }}?text=Hola%2C%20me%20interesa%20conocer%20el%20cat%C3%A1logo%20de%20productos%20Alianxa"
+           target="_blank" rel="noopener noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32" fill="white">
+                <path d="M16 0C7.163 0 0 7.163 0 16c0 2.822.737 5.469 2.027 7.774L0 32l8.469-2.001A15.934 15.934 0 0016 32c8.837 0 16-7.163 16-16S24.837 0 16 0zm0 29.333a13.27 13.27 0 01-6.771-1.849l-.485-.288-5.027 1.187 1.224-4.896-.317-.502A13.267 13.267 0 012.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.27-9.862c-.398-.199-2.355-1.162-2.72-1.295-.365-.133-.631-.199-.897.199-.266.398-1.03 1.295-1.263 1.561-.232.266-.465.299-.863.1-.398-.2-1.681-.619-3.203-1.977-1.184-1.057-1.983-2.362-2.215-2.76-.232-.398-.025-.613.175-.811.18-.179.398-.465.597-.698.199-.232.266-.398.398-.664.133-.266.066-.498-.033-.697-.1-.199-.897-2.162-1.229-2.96-.324-.778-.653-.673-.897-.685l-.764-.013c-.266 0-.697.1-1.063.498-.365.398-1.395 1.362-1.395 3.325 0 1.962 1.428 3.859 1.627 4.125.199.266 2.81 4.291 6.807 6.018.951.411 1.693.656 2.271.839.954.303 1.822.26 2.509.158.765-.114 2.355-.963 2.688-1.893.332-.93.332-1.727.232-1.893-.099-.166-.365-.266-.763-.465z"/>
+            </svg>
+            Contactar por WhatsApp
+        </a>
+
+        <a class="public-catalog-link" href="https://catalogo.alianxa.co/publico">Ver catálogo público</a>
+
+        <p class="footer">Solo para clientes autorizados</p>
+    </div>
+
+    <style>
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+    </style>
+    <script>
+        function showLoading() {
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('btnSubmit').textContent = 'Consultando...';
+            document.getElementById('btnSubmit').style.background = '#999';
+            document.getElementById('loginLoading').style.display = 'block';
+        }
+
+        function ajustarCampoDoc(tipo) {
+            const input = document.getElementById('cedula');
+            input.setAttribute('pattern', '[0-9]*');
+            input.setAttribute('inputmode', 'numeric');
+            if (tipo === 'NIT') {
+                input.placeholder = 'Ej: celular';
+            } else if (tipo === 'DIE') {
+                input.placeholder = 'Ej: celular';
+            } else if (tipo === 'PEP') {
+                input.placeholder = 'Ej: celular';
+                input.setAttribute('pattern', '[0-9]*');
+                input.setAttribute('inputmode', 'numeric');
+            } else {
+                input.placeholder = 'Ej: celular';
+            }
+            // No borrar el número ya escrito — solo actualizar placeholder y foco
+            input.focus();
+        }
+    </script>
+    </div>
+</body>
+</html>

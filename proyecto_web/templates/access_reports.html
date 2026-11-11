@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de accesos - Alianxa</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f3f6fa;
+            color: #233044;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+        .export-secondary {
+            border: 1px solid #cbd4df;
+            background: #fff;
+            color: #176fa5;
+        }
+        main { width: 100%; max-width: 1800px; margin: 0 auto; }
+        header { margin-bottom: 22px; }
+        h1 { margin: 0 0 6px; color: #1a2a4a; font-size: 1.8rem; }
+        .subtitle { color: #637083; }
+        .filters, .panel, .metric {
+            background: #fff;
+            border: 1px solid #e1e7ef;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #1a2a4a0d;
+        }
+        .filters {
+            display: grid;
+            grid-template-columns: minmax(145px, 1fr) minmax(145px, 1fr) minmax(120px, .75fr) auto minmax(230px, 1.35fr) auto;
+            gap: 12px;
+            align-items: end;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        label { display: grid; gap: 5px; font-size: .88rem; font-weight: 600; }
+        label input, label select { width: 100%; }
+        input, select, button, .export {
+            min-height: 40px;
+            padding: 8px 11px;
+            border: 1px solid #cbd4df;
+            border-radius: 7px;
+            background: white;
+            color: inherit;
+            font: inherit;
+        }
+        button, .export {
+            border: 0;
+            background: #176fa5;
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .export { display: inline-flex; align-items: center; white-space: nowrap; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .metric { padding: 18px; }
+        .metric span { display: block; color: #637083; font-size: .9rem; }
+        .metric strong { display: block; margin-top: 7px; color: #1a2a4a; font-size: 2rem; }
+        .origin-panel { display: flex; align-items: center; gap: 24px; padding: 12px 18px; }
+        .origin-panel h2 { flex: 0 0 auto; margin: 0; }
+        .origin-table { width: auto; min-width: 280px; }
+        .origin-table th, .origin-table td { padding: 6px 12px; }
+        .client-lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+        .panel { padding: 18px; margin-bottom: 16px; min-width: 0; }
+        h2 { margin: 0 0 14px; color: #1a2a4a; font-size: 1.12rem; }
+        .table-wrap { width: 100%; min-width: 0; max-height: min(48vh, 560px); overflow: auto; overscroll-behavior: contain; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { padding: 9px 8px; border-bottom: 1px solid #edf0f4; text-align: left; }
+        th { color: #637083; font-size: .84rem; }
+        td { overflow-wrap: anywhere; }
+        th { position: sticky; top: 0; z-index: 1; background: #fff; }
+        .origin-table { table-layout: auto; }
+        .frequent-table th:nth-child(1) { width: 27%; }
+        .frequent-table th:nth-child(2) { width: 20%; }
+        .frequent-table th:nth-child(3) { width: 10%; }
+        .frequent-table th:nth-child(4) { width: 27%; }
+        .frequent-table th:nth-child(5) { width: 16%; }
+        .new-table th:nth-child(1) { width: 34%; }
+        .new-table th:nth-child(2) { width: 23%; }
+        .new-table th:nth-child(3) { width: 12%; }
+        .new-table th:nth-child(4) { width: 31%; }
+        .phone, .count, .last-access { white-space: nowrap; }
+        .empty { color: #758195; padding: 12px 0; }
+        .note { margin: 18px 0; color: #637083; font-size: .88rem; line-height: 1.5; }
+        @media (max-width: 1100px) {
+            .filters { display: flex; flex-wrap: wrap; }
+            .client-lists { grid-template-columns: minmax(0, 1fr); gap: 0; }
+            .frequent-table, .new-table { min-width: 700px; }
+        }
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            h1 { font-size: 1.5rem; }
+            header { margin-bottom: 16px; }
+            .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+            .metric { padding: 13px; }
+            .metric strong { font-size: 1.6rem; }
+            .panel { padding: 14px; }
+            .origin-panel { align-items: flex-start; flex-direction: column; gap: 8px; }
+            .origin-table { min-width: 0; }
+            .filters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .filters label { min-width: 0; }
+            .filters button, .filters .export { justify-content: center; grid-column: span 2; }
+            .filters .export { text-align: center; }
+        }
+        @media (max-width: 360px) {
+            body { padding: 10px; }
+            .metrics { grid-template-columns: 1fr 1fr; gap: 7px; }
+            .metric { padding: 10px; }
+            .metric span { font-size: .8rem; }
+            .metric strong { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <h1>Reporte de accesos al catálogo</h1>
+        <div class="subtitle">Métricas de accesos exitosos registrados en MySQL.</div>
+    </header>
+
+    <form class="filters" method="get" action="/admin/accesos">
+        <label>Desde
+            <input type="date" name="desde" value="{{ start_date }}" required>
+        </label>
+        <label>Hasta
+            <input type="date" name="hasta" value="{{ end_date }}" required>
+        </label>
+        <label>Origen
+            <select name="origen">
+                <option value="" {{ "selected" if not origin else "" }}>Todos</option>
+                <option value="web" {{ "selected" if origin == "web" else "" }}>Web</option>
+                <option value="excel" {{ "selected" if origin == "excel" else "" }}>Excel</option>
+                <option value="publico" {{ "selected" if origin == "publico" else "" }}>Público</option>
+            </select>
+        </label>
+        <button type="submit">Consultar</button>
+        <a class="export" href="/admin/accesos/export.xlsx?desde={{ start_date }}&hasta={{ end_date }}&origen={{ origin }}">Descargar reporte Excel</a>
+        <a class="export export-secondary" href="/admin/accesos/export.csv?desde={{ start_date }}&hasta={{ end_date }}&origen={{ origin }}">CSV</a>
+    </form>
+
+    <section class="metrics" aria-label="Indicadores">
+        <div class="metric"><span>Accesos exitosos</span><strong>{{ summary.total_accesses }}</strong></div>
+        <div class="metric"><span>Personas únicas</span><strong>{{ summary.unique_clients }}</strong></div>
+        <div class="metric"><span>No registradas en Alegra</span><strong>{{ summary.new_clients }}</strong></div>
+        <div class="metric"><span>Clientes recurrentes</span><strong>{{ summary.frequent_clients }}</strong></div>
+    </section>
+
+    <section class="panel origin-panel">
+            <h2>Accesos por origen</h2>
+            {% if by_origin %}
+            <div class="table-wrap" tabindex="0" aria-label="Tabla de accesos por origen">
+            <table class="origin-table">
+                <thead><tr><th>Origen</th><th>Accesos</th></tr></thead>
+                <tbody>
+                    {% for row in by_origin %}
+                    <tr><td>{{ row.origen or "Sin especificar" }}</td><td>{{ row.accesses }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}<div class="empty">No hay accesos en este período.</div>{% endif %}
+    </section>
+
+    <div class="client-lists">
+        <section class="panel">
+            <h2>Clientes que consultan con frecuencia</h2>
+            {% if frequent_clients %}
+            <div class="table-wrap" tabindex="0" aria-label="Tabla de clientes frecuentes">
+            <table class="frequent-table">
+                <thead><tr><th>Nombre</th><th>Celular</th><th>Accesos</th><th>Último acceso</th><th>Origen</th></tr></thead>
+                <tbody>
+                    {% for client in frequent_clients %}
+                    <tr>
+                        <td>{{ client.name or "Sin nombre" }}</td>
+                        <td class="phone">{{ client.phone or "No registrado" }}</td>
+                        <td class="count">{{ client.accesses }}</td>
+                        <td class="last-access">{{ client.last_access.strftime("%d/%m/%Y %H:%M") if client.last_access else "" }}</td>
+                        <td>{{ client.origins or "" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}<div class="empty">No hay clientes con más de un acceso en este período.</div>{% endif %}
+        </section>
+
+        <section class="panel">
+            <h2>Personas no registradas en Alegra</h2>
+            {% if new_clients %}
+            <div class="table-wrap" tabindex="0" aria-label="Tabla de personas no registradas en Alegra">
+            <table class="new-table">
+                <thead><tr><th>Nombre</th><th>Celular</th><th>Accesos</th><th>Último acceso</th></tr></thead>
+                <tbody>
+                    {% for client in new_clients %}
+                    <tr>
+                        <td>{{ client.name or "Sin nombre" }}</td>
+                        <td class="phone">{{ client.phone or "No registrado" }}</td>
+                        <td class="count">{{ client.accesses }}</td>
+                        <td class="last-access">{{ client.last_access.strftime("%d/%m/%Y %H:%M") if client.last_access else "" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}<div class="empty">No hay personas en esta categoría para el período.</div>{% endif %}
+        </section>
+    </div>
+
+    <p class="note">
+        Solo se cuentan accesos exitosos. “Personas únicas” se calcula usando
+        documento y, cuando no está disponible, teléfono o correo. Los listados
+        muestran el celular para facilitar el seguimiento comercial; documentos,
+        correos e IP no se exponen. “No registrada en Alegra”
+        refleja la clasificación guardada al momento del acceso.
+    </p>
+</main>
+</body>
+</html>

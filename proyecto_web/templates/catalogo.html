@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Alianxa - Productos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        .header-left span {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+            font-size: 0.85rem;
+        }
+
+        .user-info .name {
+            font-weight: 600;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* Stats bar */
+        .stats {
+            background: white;
+            padding: 12px 30px;
+            display: flex;
+            gap: 30px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .stats strong {
+            color: #1a2a4a;
+        }
+
+        /* Search */
+        .search-bar {
+            padding: 15px 30px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input-wrap {
+            display: flex;
+            align-items: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-input-wrap:focus-within {
+            border-color: #2d4a7a;
+        }
+
+        .search-input-wrap input {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .btn-search {
+            background: #2d4a7a;
+            border: none;
+            padding: 10px 14px;
+            cursor: pointer;
+            color: white;
+            font-size: 1rem;
+            transition: background 0.2s;
+            line-height: 1;
+        }
+
+        .btn-search:hover { background: #1a2a4a; }
+
+        .btn-clear-search {
+            background: none; border: none;
+            padding: 10px 10px; cursor: pointer;
+            color: #999; font-size: 1rem;
+            transition: color 0.2s; line-height: 1;
+            display: none;
+        }
+        .btn-clear-search:hover { color: #e53935; }
+        .search-input-wrap input:not(:placeholder-shown) ~ .btn-clear-search { display: block; }
+
+        /* View toggle */
+        .view-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-view {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #555;
+            transition: background 0.2s, color 0.2s;
+            line-height: 1;
+        }
+
+        .btn-view.active {
+            background: #2d4a7a;
+            color: white;
+            border-color: #2d4a7a;
+        }
+
+        .btn-view:hover:not(.active) { background: #e0e0e0; }
+
+        /* Catálogo */
+        .catalog {
+            padding: 20px 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 25px 0 15px 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .category-header:first-child {
+            margin-top: 0;
+        }
+
+        /* Product grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        /* Vista lista */
+        .products-grid.view-list {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .products-grid.view-list .product-card {
+            flex-direction: row;
+            align-items: center;
+            padding: 10px 15px;
+            gap: 15px;
+        }
+
+        .products-grid.view-list .product-image {
+            width: 70px;
+            height: 70px;
+            min-width: 70px;
+            margin-bottom: 0;
+            padding: 6px;
+        }
+
+        .products-grid.view-list .product-image.no-img {
+            font-size: 1.8rem;
+        }
+
+        .products-grid.view-list .product-name {
+            margin-bottom: 0;
+        }
+
+        .products-grid.view-list .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .products-grid.view-list .product-footer {
+            border-top: none;
+            padding-top: 0;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            min-width: 120px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        .product-image.no-img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 3rem;
+        }
+
+        .product-code {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 4px;
+            font-family: monospace;
+        }
+
+        .product-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #1a2a4a;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            flex-grow: 1;
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .product-price {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1a2a4a;
+        }
+
+        .product-price.contactar {
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .product-stock {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .stock-available {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .stock-low {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        /* ── Splash de carga ── */
+        #splash {
+            position: fixed; inset: 0;
+            background: linear-gradient(160deg, #1a2a4a 0%, #2d4a7a 60%, #1a2a4a 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #splash.oculto { opacity: 0; visibility: hidden; pointer-events: none; }
+        .splash-logo {
+            font-size: 2.2rem; font-weight: 900; color: white;
+            letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .splash-logo span { color: #a8d4ff; }
+        .splash-sub {
+            font-size: 0.78rem; color: rgba(255,255,255,0.5);
+            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px;
+        }
+        .splash-msg {
+            font-size: 0.88rem; color: rgba(255,255,255,0.75);
+            margin-bottom: 18px; min-height: 1.2em;
+            text-align: center; transition: opacity 0.3s;
+        }
+        .progress-track {
+            width: 220px; height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 4px; overflow: hidden; margin-bottom: 30px;
+        }
+        .progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #a8d4ff, #fff);
+            border-radius: 4px; transition: width 0.4s ease;
+        }
+        .splash-dots { display: flex; gap: 8px; }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            animation: dot-pulse 1.4s ease-in-out infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dot-pulse {
+            0%,100% { background: rgba(255,255,255,0.25); transform: scale(1); }
+            50%      { background: rgba(168,212,255,0.9); transform: scale(1.3); }
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            .header-right { justify-content: center; }
+            .stats { flex-wrap: wrap; justify-content: center; }
+            .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+            .catalog { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Splash de carga ── -->
+    <div id="splash">
+        <div class="splash-logo">ESTE ES</div>
+        <div class="splash-sub">VERSIÓN REAL DEL CATÁLOGO</div>
+        <div class="splash-msg" id="splash-msg">Preparando tu listado...</div>
+        <div class="progress-track">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="splash-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-left">
+            <h1>📋 Catálogo de Productos</h1>
+            <span>Precios IVA incluido • Sujeto a disponibilidad</span>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="name"> {{ nombre }}</div>
+                <div>Sesión activa</div>
+            </div>
+            <a href="/logout" class="btn-logout">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <div class="stats">
+        <span><strong>{{ total_productos }}</strong> productos disponibles</span>
+        <span><strong>{{ catalog|length }}</strong> categorías</span>
+        <span>Actualizado: <strong>{{ fecha }}</strong></span>
+    </div>
+
+    <div class="search-bar">
+        <div class="search-input-wrap">
+            <input type="text" id="searchInput" placeholder="Buscar producto por nombre o código..." 
+                   oninput="filterProducts()"
+                   onkeydown="if(event.key==='Escape') clearSearch()">
+            <button class="btn-clear-search" id="btn-clear-search" onclick="clearSearch()" title="Borrar búsqueda">✕</button>
+            <button class="btn-search" onclick="filterProducts()" title="Buscar">🔍</button>
+        </div>
+        <div class="view-toggle">
+            <button class="btn-view active" id="btnGrid" onclick="setView('grid')" title="Cuadrícula">⊞</button>
+            <button class="btn-view" id="btnList" onclick="setView('list')" title="Lista">☰</button>
+        </div>
+    </div>
+
+    <div class="catalog">
+        {% for categoria, productos in catalog.items() %}
+        <div class="category-section" data-category="{{ categoria }}">
+            <div class="category-header">{{ categoria }}</div>
+            <div class="products-grid">
+                {% for p in productos %}
+                <div class="product-card" data-search="{{ p.nombre|lower }} {{ p.referencia|lower }}">
+                    {% if p.imagen %}
+                    <img src="{{ p.imagen }}" alt="{{ p.nombre }}" class="product-image" loading="lazy">
+                    {% else %}
+                    <div class="product-image no-img">📦</div>
+                    {% endif %}
+                    
+                    <div class="product-info">
+                        <div class="product-code">{{ p.referencia }}</div>
+                        <div class="product-name">{{ p.nombre }}</div>
+                    </div>
+
+                    <div class="product-footer">
+                        {% if p.precio_iva > 0 %}
+                        <span class="product-price">${{ "{:,.0f}".format(p.precio_iva) }}</span>
+                        {% else %}
+                        <span class="product-price contactar">Contactar asesor</span>
+                        {% endif %}
+                        
+                        {% if p.stock > 10 %}
+                        <span class="product-stock stock-available">✔ Disponible</span>
+                        {% else %}
+                        <span class="product-stock stock-low">⚠ Últimas {{ p.stock }} und</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="page-footer">
+        Catálogo Alianxa © {{ fecha[:10] }} • Precios sujetos a cambios sin previo aviso
+    </div>
+
+    <script>
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('btn-clear-search').style.display = 'none';
+            filterProducts();
+        }
+
+        function filterProducts() {            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.product-card');
+            const sections = document.querySelectorAll('.category-section');
+
+            cards.forEach(card => {
+                const searchText = card.getAttribute('data-search');
+                card.style.display = searchText.includes(query) ? '' : 'none';
+            });
+
+            // Ocultar categorías vacías
+            sections.forEach(section => {
+                const visibleCards = section.querySelectorAll('.product-card:not([style*="display: none"])');
+                section.style.display = visibleCards.length > 0 ? '' : 'none';
+            });
+        }
+
+        function setView(mode) {
+            const grids = document.querySelectorAll('.products-grid');
+            const btnGrid = document.getElementById('btnGrid');
+            const btnList = document.getElementById('btnList');
+
+            grids.forEach(g => {
+                g.classList.toggle('view-list', mode === 'list');
+            });
+
+            btnGrid.classList.toggle('active', mode === 'grid');
+            btnList.classList.toggle('active', mode === 'list');
+
+            localStorage.setItem('catalogView', mode);
+        }
+
+        // Restaurar vista preferida al cargar
+        (function() {
+            const saved = localStorage.getItem('catalogView');
+            if (saved === 'list') setView('list');
+        })();
+
+        // ── Splash ────────────────────────────────────────────────────────
+        (function() {
+            const msgs = [
+                "Preparando tu listado...",
+                "Cargando precios actualizados...",
+                "Organizando categorías...",
+                "¡Casi listo!",
+            ];
+            const bar = document.getElementById('progress-bar');
+            const msg = document.getElementById('splash-msg');
+            const steps = [
+                { pct: 25,  delay: 150  },
+                { pct: 55,  delay: 600  },
+                { pct: 80,  delay: 1100 },
+                { pct: 100, delay: 1600 },
+            ];
+            steps.forEach(({ pct, delay }, i) => {
+                setTimeout(() => {
+                    bar.style.width = pct + '%';
+                    msg.style.opacity = '0';
+                    setTimeout(() => {
+                        msg.textContent = msgs[i];
+                        msg.style.opacity = '1';
+                    }, 150);
+                }, delay);
+            });
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    document.getElementById('splash').classList.add('oculto');
+                }, 1900);
+            });
+        })();
+    </script>
+</body>
+</html>

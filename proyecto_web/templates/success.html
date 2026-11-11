@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Listo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a4a 0%, #2d4a7a 50%, #1a3a5a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .check-icon { font-size: 3.5rem; margin-bottom: 16px; }
+
+        h1 { color: #1a2a4a; font-size: 1.4rem; margin-bottom: 6px; }
+
+        .welcome { color: #666; font-size: 0.9rem; margin-bottom: 28px; }
+
+        .options-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .option-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px 14px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: block;
+        }
+        .option-card:hover {
+            border-color: #2d4a7a;
+            background: #f0f5ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26,42,74,0.12);
+        }
+        .option-card.primary {
+            background: linear-gradient(135deg, #1a2a4a, #2d4a7a);
+            border-color: transparent;
+            color: white;
+        }
+        .option-card.primary:hover {
+            background: linear-gradient(135deg, #152238, #234070);
+            border-color: transparent;
+        }
+
+        .option-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+        .option-title { font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 4px; }
+        .option-desc { font-size: 0.72rem; opacity: 0.75; display: block; line-height: 1.3; }
+
+        .expiry {
+            color: #999;
+            font-size: 0.78rem;
+            margin-bottom: 14px;
+        }
+
+        .footer { color: #bbb; font-size: 0.72rem; }
+
+        .btn-disabled {
+            opacity: 0.5 !important;
+            pointer-events: none !important;
+            transform: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="check-icon">✅</div>
+        <h1>¡Catálogo generado!</h1>
+        <p class="welcome">Hola <strong>{{ nombre }}</strong>, elige cómo ver tu catálogo:</p>
+
+        <p class="options-label">Elige un formato</p>
+
+        <div class="options-grid">
+            <!-- Catálogo Web -->
+            <a href="/ver/{{ token_web }}" class="option-card primary" id="btnWeb" onclick="disableBtn('btnWeb')">
+                <span class="option-icon">🌐</span>
+                <span class="option-title">Catálogo Web</span>
+                <span class="option-desc">Vista interactiva con buscador y filtros</span>
+            </a>
+
+            <!-- Google Sheets -->
+            <a href="/excel/{{ token_excel }}" class="option-card" id="btnExcel" onclick="disableBtn('btnExcel')">
+                <span class="option-icon">📊</span>
+                <span class="option-title">Google Sheets</span>
+                <span class="option-desc">Hoja de cálculo con imágenes y buscador</span>
+            </a>
+        </div>
+
+        <p class="expiry">⏱ Cada link es de un solo uso. Si necesitas acceder de nuevo, ingresa tu cédula.</p>
+        <p class="footer">Catálogo de Precios • IVA incluido • Sujeto a disponibilidad</p>
+    </div>
+
+    <script>
+        function disableBtn(id) {
+            setTimeout(() => {
+                document.getElementById(id).classList.add('btn-disabled');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
